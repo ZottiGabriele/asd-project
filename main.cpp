@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <limits>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ input *parseInput();
 void sort(input *arr);
 void mergeSort(float *arr, int a, int b);
 void merge(float *arr, int a, int r, int b);
-void solve(input *in);
+float solve(input *in);
 
 int main(int argc, char **argv) {
 
@@ -20,16 +21,18 @@ int main(int argc, char **argv) {
 
     cout << "Read " << in->count << " numbers -> ";
     for(int i = 0; i < in->count; i++) {
-        cout << in->nums[i] << " ";
+        cout << to_string(in->nums[i]) << " ";
     }
     cout << endl;
 
-    solve(in);
+    float solution = solve(in);
+
+    cout << "The solution is " << to_string(solution) << endl;
 
     return 0;
 }
 
-void solve(input *in) {
+float solve(input *in) {
     sort(in);
 
     float W = 0;
@@ -49,7 +52,7 @@ void solve(input *in) {
         }
     }
 
-    cout << "The solution is " << in->nums[i] << endl;
+    return in->nums[i];
 }
 
 void sort(input *arr) {
