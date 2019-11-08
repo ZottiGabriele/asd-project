@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits>
 #include <chrono>
+#include <math.h>
 
 using namespace std;
 
@@ -18,27 +19,35 @@ float solve(input *in);
 double compute_clock_resolution();
 long long compute_repetitions(input* in, double t_min);
 double get_timing(input* in, long long rep);
+float get_random_number(double* seed);
+input* get_random_input(long long size);
 
 int main(int argc, char **argv) {
 
-    freopen("/Users/gabrielezotti/Documents/asd-project/input.txt", "r", stdin);
-    input *in = parseInput();
-
 #ifdef GET_TIMINGS
     //mesure timings
+    int size = 10;
+    if(argc > 1) {
+        size = atoi(argv[1]);
+    }
+    input *in = get_random_input(size);
+
     double clock_resolution = compute_clock_resolution();
     cout.precision(15);
-    cout << fixed << "Clock has resolution of " << clock_resolution  << "\n";
+    clog.precision(15);
+    //clog << fixed << "Clock has resolution of " << clock_resolution  << "\n";
 
     float k = 0.05; //accepted error of 5%
     double t_min = clock_resolution / k + 0.5; //added 0.5 seconds to ensure better
     long long rep = compute_repetitions(in, t_min);
-    cout << "To make the program run for " << t_min << "s repetitions needed = " << rep << "\n";
+    clog << "To make the program run for " << t_min << "s repetitions needed = " << rep << "\n";
 
     double timing = get_timing(in, rep);
-    cout << fixed << "Time elapsed: " << timing  << " with average: " << timing/rep <<"\n";
+    clog << fixed << "Time elapsed: " << timing  << " with average: " << timing/rep <<"\n";
+    cout << fixed << size << "," << timing / rep << "\n";
 #else
     //just solve the problem without getting timings
+    input *in = parseInput();
     float solution = solve(in);
     cout << to_string(solution) << "\n";
 #endif
@@ -177,4 +186,32 @@ double get_timing(input* in, long long rep) {
     auto t1 = chrono::high_resolution_clock::now();
     auto elapsed = chrono::duration<double>(t1- t0).count();
     return elapsed;
+}
+
+float get_random_number(double* seed) {
+    int a = 16807;
+    int m = 2147483647;
+    int q = 127773;
+    int r = 2836;
+    double hi = ceil(*seed / q);
+    double lo = *seed - q * hi;
+    double test = a * lo - r * hi;
+    if(test < 0.0) {
+        *seed = test + m;
+    } else {
+        *seed = test;
+    }
+    return *seed / m;
+}
+
+input* get_random_input(long long size) {
+    input *out = (input*) malloc(sizeof(input));
+    out->nums = (float*) malloc(sizeof(float) * size);
+    out->count = size;
+    double seed = time(NULL); //seed the current time of execution
+    get_random_number(&seed); //seed initialization
+    for(long long i = 0; i < size; i++) {
+        out->nums[i] = get_random_number(&seed);
+    }
+    return out;
 }
