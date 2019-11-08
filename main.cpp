@@ -12,7 +12,12 @@ typedef struct input {
     long long count;
 };
 
-input *parseInput();
+typedef struct result {
+    double avg_time;
+    double error;
+};
+
+input* parseInput();
 void sort(input *arr);
 void mergeSort(float *arr, int a, int b);
 void merge(float *arr, int a, int r, int b);
@@ -20,19 +25,20 @@ float solve(input *in);
 double compute_clock_resolution();
 long long compute_repetitions(long long size, double t_min, bool should_solve);
 double get_timing(long long size, double t_min);
+result* get_timing(long long size, double t_min, int c, double za, double max_error_percentage);
 float get_random_number(double* seed);
 input* get_random_input(long long size);
+void free_input(input *in);
 
 
 int main(int argc, char **argv) {
 
 #ifdef GET_TIMINGS
     //mesure timings
-    int size = 10;
+    int size = 20000;
     if(argc > 1) {
         size = atoi(argv[1]);
     }
-    input *in = get_random_input(size);
 
     double clock_resolution = compute_clock_resolution();
     cout.precision(15);
@@ -40,11 +46,11 @@ int main(int argc, char **argv) {
     //clog << fixed << "Clock has resolution of " << clock_resolution  << "\n";
 
     float k = 0.05; //accepted error of 5%
-    double t_min = clock_resolution / k + 0.5; //added 0.5 seconds to ensure better
+    double t_min = clock_resolution / k + 0.25; //added 0.25 seconds to ensure better
 
-    double timing = get_timing(size, t_min);
-    clog << fixed << "Size: " << size << " | Average time elapsed: " << timing  << "\n";
-    cout << fixed << size << "," << timing << "\n";
+    result* timing_result = get_timing(size, t_min, 5, 1.96, 0.05);
+    clog << fixed << "Size: " << size << " | Average time elapsed: " << timing_result->avg_time << "| Error: " << timing_result->error << "\n";
+    cout << fixed << size << "," << timing_result->avg_time << "," << timing_result->error  << "\n";
 #else
     //just solve the problem without getting timings
     input *in = parseInput();
@@ -114,6 +120,8 @@ void merge(float *arr, int a, int r, int b) {
     for(int k = 0; k < b-a+1; k++) {
         arr[a + k] = tmp[k];
     }
+
+    free(tmp);
 }
 
 input *parseInput() {
@@ -145,6 +153,7 @@ double compute_clock_resolution() {
 }
 
 long long compute_repetitions(long long size, double t_min, bool should_solve) {
+    input *in;
     chrono::high_resolution_clock::time_point t0, t1;
     long long rep = 1;
     double elapsed = 0;
@@ -152,8 +161,9 @@ long long compute_repetitions(long long size, double t_min, bool should_solve) {
         rep *= 2;
         t0 = chrono::high_resolution_clock::now();
         for(int i = 0; i < rep; i++) {
-            input *in = get_random_input(size);
+            in = get_random_input(size);
             if(should_solve) solve(in);
+            free_input(in);
         }
         t1 = chrono::high_resolution_clock::now();
         elapsed = chrono::duration<double>(t1 - t0).count();
@@ -166,8 +176,9 @@ long long compute_repetitions(long long size, double t_min, bool should_solve) {
         rep = (max + min) / 2;
         t0 = chrono::high_resolution_clock::now();
         for(int i = 0; i < rep; i++) {
-            input *in = get_random_input(size);
+            in = get_random_input(size);
             if(should_solve) solve(in);
+            free_input(in);
         }
         t1 = chrono::high_resolution_clock::now();
         elapsed = chrono::duration<double>(t1 - t0).count();
@@ -181,18 +192,22 @@ long long compute_repetitions(long long size, double t_min, bool should_solve) {
 }
 
 double get_timing(long long size, double t_min) {
+    input * in;
     long long rep_tara = compute_repetitions(size, t_min, false);
     long long rep_lordo = compute_repetitions(size, t_min, true);
     auto t0 = chrono::high_resolution_clock::now();
     for(long long i = 0; i < rep_tara; i++) {
-        input * in = get_random_input(size);
+        in = get_random_input(size);
+        free_input(in);
     }
     auto t1 = chrono::high_resolution_clock::now();
     auto elapsed_tara = chrono::duration<double>(t1- t0).count();
+
     t0 = chrono::high_resolution_clock::now();
     for(long long i = 0; i < rep_lordo; i++) {
-        input * in = get_random_input(size);
+        in = get_random_input(size);
         solve(in);
+        free_input(in);
     }
     t1 = chrono::high_resolution_clock::now();
     auto elapsed_lordo = chrono::duration<double>(t1- t0).count();
@@ -200,6 +215,33 @@ double get_timing(long long size, double t_min) {
     return elapsed_mean;
 }
 
+result* get_timing(long long size, double t_min, int c, double za, double max_error_percentage) {
+    double t = 0;
+    double sum2 = 0;
+    long long cn = 0;
+    double m = 0;
+    double e = 0;
+    double s = 0;
+    double delta = 0;
+    do {
+        clog << "Iterating: ";
+        for(int i = 1; i <= c; i++) {
+            m = get_timing(size, t_min);
+            t += m;
+            sum2 += m*m;
+            clog << i << " ";
+        }
+        cn += c;
+        e = t / cn;
+        s = sqrt(sum2/cn - e*e);
+        delta = (1/sqrt(cn)) * za * s;
+        clog << "\nComputed delta: " << delta << " target: "<< e * max_error_percentage <<"\n";
+    } while(delta > e * max_error_percentage);
+    result *out = (result*) malloc(sizeof(result));
+    out->avg_time = e;
+    out->error = delta;
+    return out;
+}
 float get_random_number(double* seed) {
     int a = 16807;
     int m = 2147483647;
@@ -226,4 +268,9 @@ input* get_random_input(long long size) {
         out->nums[i] = get_random_number(&seed);
     }
     return out;
+}
+
+void free_input(input *in) {
+    free(in->nums);
+    free(in);
 }
