@@ -7,4 +7,7 @@ if (GET_TIMINGS)
     add_definitions(-DGET_TIMINGS)
 endif ()
 
-add_executable(asd_project main.cpp)
+set(SOURCES main.cpp include/main.h include/timings.h src/timings.cpp include/input_handeler.h src/input_handeler.cpp)
+
+add_executable(asd_project ${SOURCES})
+target_include_directories(asd_project PRIVATE /Users/gabrielezotti/Documents/asd-project/include)
