@@ -56,14 +56,14 @@ float find_weighted_lower_median(input* in) {
 
     int i = 0;
     float weight = 0;
-    while(true) {
+    bool found = false;
+    for(int j = 0; j < in->count; j++) {
         //accumulate the next value
-        weight += in->nums[i];
+        weight += in->nums[j];
         //if we reach or go over W/2 we found the wighted lower median
-        if(weight >= W/2) {
-            break;
-        } else {
-            i++;
+        if(!found && weight >= W/2) {
+            i = j;
+            found = true;
         }
     }
 
