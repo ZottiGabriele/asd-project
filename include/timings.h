@@ -8,7 +8,7 @@
 #include <input_handeler.h>
 
 double compute_clock_resolution();
-float get_random_number(unsigned long long* seed);
+double get_random_number(double* seed);
 input* get_random_input(long long size);
 double get_timing(long long size, double t_min);
 result* get_timing(long long size, double t_min, int c, double za, double max_error_percentage);

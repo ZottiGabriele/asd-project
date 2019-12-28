@@ -9,13 +9,13 @@ using namespace std;
 input *get_input_from_stdin() {
 
     input *in = (input *) malloc(sizeof(input));
-    in->nums = (float *) malloc(sizeof(float));
+    in->nums = (double *) malloc(sizeof(double));
     in->count = 0;
     char sep;
 
     while(sep != '.') {
         in->count++;
-        in->nums = (float *) realloc(in->nums, sizeof(float) * in->count);
+        in->nums = (double *) realloc(in->nums, sizeof(double) * in->count);
         cin >> in->nums[in->count - 1] >> sep;
     }
 

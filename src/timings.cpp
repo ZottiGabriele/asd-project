@@ -25,7 +25,7 @@ double compute_clock_resolution() {
 /// Pseudo-random number generator implementation
 /// \param seed seed to start the generation
 /// \return pseudo-random generated float
-float get_random_number(double* seed) {
+double get_random_number(double* seed) {
     int a = 16807;
     int m = 2147483647;
     int q = 127773;
@@ -47,7 +47,7 @@ float get_random_number(double* seed) {
 /// \return pseudo-randomly generated input
 input* get_random_input(long long size) {
     input *out = (input*) malloc(sizeof(input));
-    out->nums = (float*) malloc(sizeof(float) * size);
+    out->nums = (double*) malloc(sizeof(double) * size);
     out->count = size;
 
     double seed = time(NULL); //seed the current time of execution

@@ -9,8 +9,8 @@
 #include <timings.h>
 
 void sort(input *in);
-void mergeSort(float *arr, int a, int b);
-void merge(float *arr, int a, int r, int b);
-float find_weighted_lower_median(input* in);
+void mergeSort(double *arr, int a, int b);
+void merge(double *arr, int a, int r, int b);
+double find_weighted_lower_median(input* in);
 
 #endif //ASD_PROJECT_MAIN_H

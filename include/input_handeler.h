@@ -6,7 +6,7 @@
 #define ASD_PROJECT_INPUT_HANDELER_H
 
 typedef struct input {
-    float *nums;
+    double *nums;
     long long count;
 };
 
